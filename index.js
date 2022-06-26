@@ -18,18 +18,38 @@ dotenv.config()
 conectartDB()
 
 //Cors
-const whiteList = [process.env.FRONTEND_URL]
-const corsOptions = {
-    origin: function(origin, callback) {
-        if(whiteList.includes(origin)) {
-            callback(null, true)
-        } else {
-            callback(new Error('Cors Error'))
+if(process.env.FRONTEND_URL === 'http://localhost:3000') {
+    //Cors Local
+    const whiteList = [process.env.FRONTEND_URL]
+    const corsOptions = {
+        origin: function(origin, callback) {
+            if(whiteList.includes(origin)) {
+                callback(null, true)
+            } else {
+                callback(new Error('Cors Error'))
+            }
         }
     }
-}
 
-app.use(cors(corsOptions))
+    app.use(cors(corsOptions))
+} else {
+    //Cors Production
+    app.use((req, res, next) => {
+        res.header("Access-Control-Allow-Origin", "*")
+        res.header(
+        "Access-Control-Allow-Headers",
+        "Origin, X-Requested, Content-Type, Accept Authorization"
+        )
+        if (req.method === "OPTIONS") {
+        res.header(
+            "Access-Control-Allow-Methods",
+            "POST, PUT, PATCH, GET, DELETE"
+        )
+        return res.status(200).json({})
+        }
+        next()
+    })
+}
 
 //Routing
 app.use('/api/users/', userRoutes)
